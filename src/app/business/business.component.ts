@@ -158,12 +158,10 @@ export class BusinessComponent implements OnInit {
     return this.language.t(map[type || 'WATER'] || 'liquidWater');
   }
 
-  private load() {
-    const user = this.authService.getCurrentUser();
-    const userId = user.id || 1;
 
-    this.http.get<Tank[]>(`${this.authService.apiUrl}/api/v1/inventory/tanks/user/${userId}`).subscribe({
-      next: (data) => {
+  private load(): void {
+    this.http.get<Tank[]>(`${this.authService.apiUrl}/api/v1/inventory/tanks`).subscribe({
+      next: (data: Tank[]) => {
         this.tanks = data || [];
         this.cdr.detectChanges();
       },
@@ -173,4 +171,5 @@ export class BusinessComponent implements OnInit {
       }
     });
   }
+
 }

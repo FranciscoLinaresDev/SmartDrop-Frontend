@@ -1,28 +1,38 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './iam/presentation/login/login';
 import { RegisterComponent } from './iam/presentation/register/register';
+import { authGuard } from './iam/infrastructure/services/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { 
-    path: 'forgot-password', 
-    loadComponent: () => import('./iam/presentation/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) 
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./iam/presentation/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
   },
-  { 
-    path: 'reset-password', 
-    loadComponent: () => import('./iam/presentation/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) 
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./iam/presentation/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
   },
-  { 
-    path: '2fa-verify', 
-    loadComponent: () => import('./iam/presentation/two-factor-verify/two-factor-verify.component').then(m => m.TwoFactorVerifyComponent) 
+  {
+    path: '2fa-verify',
+    loadComponent: () =>
+      import('./iam/presentation/two-factor-verify/two-factor-verify.component').then(
+        (m) => m.TwoFactorVerifyComponent,
+      ),
   },
   { path: 'dashboard', redirectTo: 'app/dashboard', pathMatch: 'full' },
   {
     path: 'app',
-    loadComponent: () =>
-      import('./shared/layout/layout.component').then((m) => m.LayoutComponent),
+    canActivate: [authGuard],
+    loadComponent: () => import('./shared/layout/layout.component').then((m) => m.LayoutComponent),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -32,13 +42,11 @@ export const routes: Routes = [
       },
       {
         path: 'alerts',
-        loadComponent: () =>
-          import('./alerts/alerts.component').then((m) => m.AlertsComponent),
+        loadComponent: () => import('./alerts/alerts.component').then((m) => m.AlertsComponent),
       },
       {
         path: 'reports',
-        loadComponent: () =>
-          import('./reports/reports.component').then((m) => m.ReportsComponent),
+        loadComponent: () => import('./reports/reports.component').then((m) => m.ReportsComponent),
       },
       {
         path: 'business',
@@ -47,13 +55,11 @@ export const routes: Routes = [
       },
       {
         path: 'support',
-        loadComponent: () =>
-          import('./support/support.component').then((m) => m.SupportComponent),
+        loadComponent: () => import('./support/support.component').then((m) => m.SupportComponent),
       },
       {
         path: 'billing',
-        loadComponent: () =>
-          import('./billing/billing.component').then((m) => m.BillingComponent),
+        loadComponent: () => import('./billing/billing.component').then((m) => m.BillingComponent),
       },
       {
         path: 'admin-users',
@@ -62,13 +68,14 @@ export const routes: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () =>
-          import('./profile/profile.component').then((m) => m.ProfileComponent),
+        loadComponent: () => import('./profile/profile.component').then((m) => m.ProfileComponent),
       },
       {
         path: 'settings/2fa',
         loadComponent: () =>
-          import('./iam/presentation/two-factor-setup/two-factor-setup.component').then((m) => m.TwoFactorSetupComponent),
+          import('./iam/presentation/two-factor-setup/two-factor-setup.component').then(
+            (m) => m.TwoFactorSetupComponent,
+          ),
       },
     ],
   },

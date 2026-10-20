@@ -24,24 +24,26 @@ export class LoginComponent {
     public language: LanguageService,
   ) {}
 
+
   onLogin() {
     if (!this.email || !this.password) {
       alert('Por favor, ingresa tu email y contraseña.');
       return;
     }
+
     this.authService.login(this.email, this.password).subscribe((res) => {
-      if (res && res.requires2FA) {
-        if (res.simulatedCode) {
-          alert('🔑 SIMULATED 2FA CODE: ' + res.simulatedCode + '\n(This simulates checking your email)');
-        }
-        this.router.navigate(['/2fa-verify'], { queryParams: { email: this.email } });
-      } else if (res) {
+      if (res && typeof res === 'object' && res.requires2FA) {
+        this.router.navigate(['/2fa-verify'], {
+          queryParams: { email: this.email }
+        });
+      } else if (res === true) {
         this.router.navigate(['/dashboard']);
       } else {
-        alert('Credenciales incorrectas.');
+        alert('No se pudo iniciar sesión. Verifica tus credenciales.');
       }
     });
   }
+
 
   togglePassword() {
     this.showPassword = !this.showPassword;
