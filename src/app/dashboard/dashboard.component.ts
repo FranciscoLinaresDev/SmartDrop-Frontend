@@ -93,13 +93,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         icon: 'activity',
         trend: 'ok',
       },
+
       {
         labelKey: 'waterTemperature',
-        value: '22 deg C',
-        subKey: 'defaultOperatingValue',
+        value: '—',
+        subText:
+          this.language.current === 'es'
+            ? 'Sin medición de temperatura'
+            : 'No temperature reading available',
         icon: 'thermometer',
         trend: 'ok',
       },
+
       {
         labelKey: 'activeDevices',
         value: `${online}/${this.devices.length}`,
