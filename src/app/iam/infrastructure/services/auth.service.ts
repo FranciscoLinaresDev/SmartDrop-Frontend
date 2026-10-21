@@ -33,33 +33,24 @@ export class AuthService {
     });
   }
 
-  login(
-    email: string,
-    password: string
-  ): Observable<boolean | { requires2FA: true }> {
+  login(email: string, password: string): Observable<boolean | { requires2FA: true }> {
     this.logout();
 
-    return this.http.post<any>(
-      `${this.apiUrl}/api/iam/auth/login`,
-      { email, password }
-    ).pipe(
+    return this.http.post<any>(`${this.apiUrl}/api/iam/auth/login`, { email, password }).pipe(
       map((res) => {
         if (res?.requires2FA) {
           if (!res.challengeId) {
             return false;
           }
 
-          sessionStorage.setItem(
-            this.pendingChallengeKey,
-            String(res.challengeId)
-          );
+          sessionStorage.setItem(this.pendingChallengeKey, String(res.challengeId));
 
           return { requires2FA: true as const };
         }
 
         return this.saveSession(res);
       }),
-      catchError(() => of(false))
+      catchError(() => of(false)),
     );
   }
 
@@ -70,12 +61,9 @@ export class AuthService {
       return of(false);
     }
 
-    return this.http.post<any>(
-      `${this.apiUrl}/api/iam/auth/2fa/verify`,
-      { challengeId, code }
-    ).pipe(
-      map((res) => this.saveSession(res))
-    );
+    return this.http
+      .post<any>(`${this.apiUrl}/api/iam/auth/2fa/verify`, { challengeId, code })
+      .pipe(map((res) => this.saveSession(res)));
   }
 
   hasPendingTwoFactorChallenge(): boolean {
@@ -83,11 +71,7 @@ export class AuthService {
   }
 
   private saveSession(res: any): boolean {
-    if (
-      !res?.accessToken ||
-      res?.userId == null ||
-      !res?.email
-    ) {
+    if (!res?.accessToken || res?.userId == null || !res?.email) {
       return false;
     }
 
@@ -124,16 +108,11 @@ export class AuthService {
         return false;
       }
 
-      const base64 = encodedPayload
-        .replace(/-/g, '+')
-        .replace(/_/g, '/');
+      const base64 = encodedPayload.replace(/-/g, '+').replace(/_/g, '/');
 
       const payload = JSON.parse(atob(base64));
 
-      return (
-        typeof payload.exp === 'number' &&
-        payload.exp * 1000 > Date.now()
-      );
+      return typeof payload.exp === 'number' && payload.exp * 1000 > Date.now();
     } catch {
       return false;
     }
@@ -173,24 +152,15 @@ export class AuthService {
   }
 
   forgotPassword(email: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/api/iam/auth/forgot-password`,
-      { email }
-    );
+    return this.http.post(`${this.apiUrl}/api/iam/auth/forgot-password`, { email });
   }
 
   resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/api/iam/auth/reset-password`,
-      { token, newPassword }
-    );
+    return this.http.post(`${this.apiUrl}/api/iam/auth/reset-password`, { token, newPassword });
   }
 
   enable2FA(email: string): Observable<any> {
-    return this.http.post(
-      `${this.apiUrl}/api/iam/auth/2fa/enable`,
-      { email }
-    );
+    return this.http.post(`${this.apiUrl}/api/iam/auth/2fa/enable`, { email });
   }
 
   isDefaultUser(): boolean {
@@ -198,10 +168,14 @@ export class AuthService {
   }
 
   getStorageKey(area: string): string {
-    const email = this.getCurrentUser().email
-      .replace(/[^a-z0-9]+/gi, '-')
+    const email = this.getCurrentUser()
+      .email.replace(/[^a-z0-9]+/gi, '-')
       .toLowerCase();
 
     return `smartdrop-${area}-${email}-v4`;
+  }
+
+  isDemoAccount(): boolean {
+    return this.getCurrentUser().email.trim().toLowerCase() === 'demo@smartdrop.io';
   }
 }

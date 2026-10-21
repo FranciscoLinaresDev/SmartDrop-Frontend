@@ -116,14 +116,17 @@
       <p>{{ language.t('deviceStatusSubtitle') }}</p>
     </div>
 
-    <button class="btn-ghost-sm"
-            (click)="openDeviceForm()">
+    <button
+      *ngIf="!isDemoAccount"
+      class="btn-ghost-sm"
+      (click)="openDeviceForm()">
       {{ language.t('addDevice') }}
     </button>
   </div>
 
   <!-- FORMULARIO DE DISPOSITIVOS -->
-  <div class="card inline-form" *ngIf="showDeviceForm">
+  <div class="card inline-form"
+       *ngIf="showDeviceForm && !isDemoAccount">
 
     <h3>
       {{ editingDeviceIndex === null
@@ -274,15 +277,17 @@
           {{ language.t('details') }}
         </button>
 
-        <button class="btn-ghost-sm"
-                (click)="openDeviceForm(i)">
-          {{ language.t('edit') }}
-        </button>
+        <ng-container *ngIf="!isDemoAccount">
+          <button class="btn-ghost-sm"
+                  (click)="openDeviceForm(i)">
+            {{ language.t('edit') }}
+          </button>
 
-        <button class="btn-ghost-sm"
-                (click)="removeDevice(i)">
-          {{ language.t('remove') }}
-        </button>
+          <button class="btn-ghost-sm"
+                  (click)="removeDevice(i)">
+            {{ language.t('remove') }}
+          </button>
+        </ng-container>
 
       </div>
     </div>

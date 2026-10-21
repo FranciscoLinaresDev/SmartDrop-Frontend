@@ -66,6 +66,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  get isDemoAccount(): boolean {
+    return this.authService.isDemoAccount();
+  }
+
   get metrics() {
     const totalDaily = this.devices.reduce(
       (sum, device) => sum + this.parseLiters(device.daily),
@@ -376,6 +380,5 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.drawChart();
       },
     });
-
   }
 }
