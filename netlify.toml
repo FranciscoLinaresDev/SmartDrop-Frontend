@@ -1,3 +1,4 @@
+
 [build]
 command = "npm run build"
 publish = "dist/SmartDrop/browser"
@@ -5,6 +6,14 @@ publish = "dist/SmartDrop/browser"
 [build.environment]
 NODE_VERSION = "20"
 
+# Proxy HTTPS hacia SmartDrop-Backend en Railway
+[[redirects]]
+from = "/api/*"
+to = "https://smartdrop-backend-production.up.railway.app/api/:splat"
+status = 200
+force = true
+
+# Navegación de Angular
 [[redirects]]
 from = "/*"
 to = "/index.html"

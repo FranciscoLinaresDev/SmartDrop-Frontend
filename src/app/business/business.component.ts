@@ -32,11 +32,15 @@ export class BusinessComponent implements OnInit {
     public language: LanguageService,
     private authService: AuthService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     this.load();
+  }
+
+  get isDemoAccount(): boolean {
+    return this.authService.isDemoAccount();
   }
 
   get closeToReplenish() {
@@ -44,12 +48,17 @@ export class BusinessComponent implements OnInit {
   }
 
   get savings() {
-    return this.tanks.reduce((sum, tank) => sum + Math.round((tank.capacity - tank.current) * 0.12), 0);
+    return this.tanks.reduce(
+      (sum, tank) => sum + Math.round((tank.capacity - tank.current) * 0.12),
+      0,
+    );
   }
 
   get fillAverage() {
     if (!this.tanks.length) return '0 h';
-    const hours = this.tanks.reduce((sum, tank) => sum + ((tank.capacity - tank.current) / 1000), 0) / this.tanks.length;
+    const hours =
+      this.tanks.reduce((sum, tank) => sum + (tank.capacity - tank.current) / 1000, 0) /
+      this.tanks.length;
     return `${Math.max(0.2, hours).toFixed(1)} h`;
   }
 
@@ -58,8 +67,9 @@ export class BusinessComponent implements OnInit {
   }
 
   openForm(index?: number) {
-    this.editingIndex = (typeof index === 'number' && this.tanks[index]) ? index : null;
-    this.form = (typeof index === 'number' && this.tanks[index]) ? { ...this.tanks[index] } : this.emptyTank();
+    this.editingIndex = typeof index === 'number' && this.tanks[index] ? index : null;
+    this.form =
+      typeof index === 'number' && this.tanks[index] ? { ...this.tanks[index] } : this.emptyTank();
     this.showForm = true;
   }
 
@@ -73,35 +83,42 @@ export class BusinessComponent implements OnInit {
       name: this.form.name,
       capacity: Number(this.form.capacity),
       current: Math.min(Number(this.form.current) || 0, Number(this.form.capacity)),
-      liquidType: this.form.liquidType || 'WATER'
+      liquidType: this.form.liquidType || 'WATER',
     };
 
     const user = this.authService.getCurrentUser();
     const userId = user.id || 1;
 
     if (this.editingIndex === null) {
-      this.http.post<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks`, { ...payload, userId }).subscribe({
-        next: (res) => {
-          this.tanks.unshift(res);
-          this.message = 'Tank added.';
-          this.showForm = false;
-          this.form = this.emptyTank();
-          this.cdr.detectChanges();
-        }
-      });
+      this.http
+        .post<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks`, { ...payload, userId })
+        .subscribe({
+          next: (res) => {
+            this.tanks.unshift(res);
+            this.message = 'Tank added.';
+            this.showForm = false;
+            this.form = this.emptyTank();
+            this.cdr.detectChanges();
+          },
+        });
     } else {
       const existing = this.tanks[this.editingIndex];
       if (existing && existing.tankId) {
-        this.http.put<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks/${existing.tankId}`, payload).subscribe({
-          next: (res) => {
-            this.tanks[this.editingIndex!] = res;
-            this.message = 'Tank updated.';
-            this.showForm = false;
-            this.form = this.emptyTank();
-            this.editingIndex = null;
-            this.cdr.detectChanges();
-          }
-        });
+        this.http
+          .put<Tank>(
+            `${this.authService.apiUrl}/api/v1/inventory/tanks/${existing.tankId}`,
+            payload,
+          )
+          .subscribe({
+            next: (res) => {
+              this.tanks[this.editingIndex!] = res;
+              this.message = 'Tank updated.';
+              this.showForm = false;
+              this.form = this.emptyTank();
+              this.editingIndex = null;
+              this.cdr.detectChanges();
+            },
+          });
       }
     }
   }
@@ -110,13 +127,15 @@ export class BusinessComponent implements OnInit {
     const tank = this.tanks[index];
     if (!tank) return;
     if (tank.tankId) {
-      this.http.put<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks/${tank.tankId}/replenish`, {}).subscribe({
-        next: (res) => {
-          this.tanks[index] = res;
-          this.message = `${tank.name} replenished.`;
-          this.cdr.detectChanges();
-        }
-      });
+      this.http
+        .put<Tank>(`${this.authService.apiUrl}/api/v1/inventory/tanks/${tank.tankId}/replenish`, {})
+        .subscribe({
+          next: (res) => {
+            this.tanks[index] = res;
+            this.message = `${tank.name} replenished.`;
+            this.cdr.detectChanges();
+          },
+        });
     } else {
       tank.current = tank.capacity;
       this.message = `${tank.name} replenished.`;
@@ -127,13 +146,15 @@ export class BusinessComponent implements OnInit {
     const tank = this.tanks[index];
     if (!tank) return;
     if (tank.tankId) {
-      this.http.delete(`${this.authService.apiUrl}/api/v1/inventory/tanks/${tank.tankId}`).subscribe({
-        next: () => {
-          this.tanks.splice(index, 1);
-          this.message = `${tank.name} removed.`;
-          this.cdr.detectChanges();
-        }
-      });
+      this.http
+        .delete(`${this.authService.apiUrl}/api/v1/inventory/tanks/${tank.tankId}`)
+        .subscribe({
+          next: () => {
+            this.tanks.splice(index, 1);
+            this.message = `${tank.name} removed.`;
+            this.cdr.detectChanges();
+          },
+        });
     } else {
       this.tanks.splice(index, 1);
       this.message = `${tank.name} removed.`;
@@ -153,24 +174,21 @@ export class BusinessComponent implements OnInit {
       FUEL: 'liquidFuel',
       CHEMICAL: 'liquidChemical',
       DAIRY: 'liquidDairy',
-      OTHER: 'liquidOther'
+      OTHER: 'liquidOther',
     };
     return this.language.t(map[type || 'WATER'] || 'liquidWater');
   }
 
-  private load() {
-    const user = this.authService.getCurrentUser();
-    const userId = user.id || 1;
-
-    this.http.get<Tank[]>(`${this.authService.apiUrl}/api/v1/inventory/tanks/user/${userId}`).subscribe({
-      next: (data) => {
+  private load(): void {
+    this.http.get<Tank[]>(`${this.authService.apiUrl}/api/v1/inventory/tanks`).subscribe({
+      next: (data: Tank[]) => {
         this.tanks = data || [];
         this.cdr.detectChanges();
       },
       error: () => {
         this.tanks = [];
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 }
